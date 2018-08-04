@@ -23,6 +23,7 @@ void cuinverse(cufftComplex *A,cufftComplex *A_f,int m);
 float psnr(float *image1,float *image2,int m,int n,int k);
 extern __global__ void Tfast(float *ddt, float *c1,float *dt,float *b, float lip1, float d1,float d2,float N);
 void fmincon(float *minx,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r);
-void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r);
+void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,float *step,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r);
 extern __global__ void PSNR3D(float *image1,float *image2,int n);
+void ceig(float *A,float *V,float *W,int a);
 #endif

@@ -478,6 +478,122 @@ void cuinverse(cufftComplex *A,cufftComplex *A_f,int m){  //A 为原矩阵，A_f
 	
 }
 
+
+void ceig(float *A,float *V,float *W,int a){   //get eigvalues and vectors
+
+	float *AT = new float[a*a];
+	for(int i = 0;i<a;i++){
+		for(int j = 0;j<a;j++){
+			AT[j*a+i] = A[i*a+j];
+		}
+	}        //colum store
+
+	float *VT = new float[a*a];
+	for(int i = 0;i<a*a;i++){
+		VT[i] = 0;
+	} 
+
+	cusolverDnHandle_t cusolverH = NULL;
+	cudaStream_t stream = NULL;
+	syevjInfo_t syevj_params = NULL;
+	
+	float *d_A = NULL;   //eigvector
+	float *d_W = NULL;  //eigvalue
+	int *d_info = NULL; 
+	int lwork = 0;
+	float *d_work = NULL;
+	int info = 0;
+
+	const double tol = 1.e-7;
+	const int max_sweeps = 15;
+	const cusolverEigMode_t jobz = CUSOLVER_EIG_MODE_VECTOR; // compute
+	const cublasFillMode_t uplo = CUBLAS_FILL_MODE_LOWER;
+
+	
+	
+	cusolverDnCreate(&cusolverH);
+	cudaStreamCreateWithFlags(&stream, cudaStreamNonBlocking);
+	cusolverDnSetStream(cusolverH, stream);
+	cusolverDnCreateSyevjInfo(&syevj_params);
+
+	cusolverDnXsyevjSetTolerance(
+		syevj_params,
+		tol);
+
+
+	/*default value of max. sweeps is 100 */
+	cusolverDnXsyevjSetMaxSweeps(
+		syevj_params,
+		max_sweeps);
+
+	cudaMalloc((void**)&d_A, sizeof(float)*a*a);
+	cudaMalloc((void**)&d_W, sizeof(float)*a);
+	cudaMalloc((void**)&d_info, sizeof(int));
+
+	cudaMemcpy(d_A, AT, sizeof(float)*a*a,cudaMemcpyHostToDevice);
+
+	cusolverDnSsyevj_bufferSize(
+		cusolverH,
+		jobz,
+		uplo,
+		a,
+		d_A,
+		a,
+		d_W,
+		&lwork,
+		syevj_params);
+
+	cudaMalloc((void**)&d_work, sizeof(float)*lwork);
+
+	cusolverDnSsyevj(
+		cusolverH,
+		jobz,
+		uplo,
+		a,
+		d_A,
+		a,
+		d_W,
+		d_work,
+		lwork,
+		d_info,
+		syevj_params);
+	cudaDeviceSynchronize();
+
+	cudaMemcpy(W, d_W, sizeof(float)*a,cudaMemcpyDeviceToHost);
+	cudaMemcpy(V, d_A, sizeof(float)*a*a,cudaMemcpyDeviceToHost);
+ 	cudaMemcpy(&info, d_info, sizeof(int), cudaMemcpyDeviceToHost);
+	
+	for(int i = 0;i<a;i++){
+		for(int j = 0;j<a;j++){
+			V[j*a+i] = VT[i*a+j];
+		}
+	}
+
+	/*if ( 0 == info ){
+		printf("syevj converges \n");
+	}else if ( 0 > info ){
+		printf("%d-th parameter is wrong \n", -info);
+		exit(1);
+	}else{
+		printf("WARNING: info = %d : syevj does not converge \n", info );
+	}*/
+
+
+
+	if (d_A) cudaFree(d_A);
+	if (d_W) cudaFree(d_W);
+	if (d_info ) cudaFree(d_info);
+	if (d_work ) cudaFree(d_work);
+
+	cusolverDnDestroy(cusolverH);
+	cudaStreamDestroy(stream);
+	cusolverDnDestroySyevjInfo(syevj_params);
+	cudaDeviceReset();
+
+	delete[] AT; AT = nullptr;
+	delete[] VT; VT = nullptr;
+}
+
 float psnr(float *image1,float *image2,int m,int n,int k){
 
 	float PSNR = 0.0;
@@ -521,15 +637,16 @@ void fmincon(float *minx,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,
 	float *f_real = new float[1];
 	float *g_real = new float[r];
 	float *H_real = new float[r*r];
+	float *step = new float[r];
 	// get one time f_real,g_real,H_real  how to updtate dual_lambda??????
 	// the follow need to loop
-	computelam(f_real,g_real,H_real,dual_lambda,XSt,SSt,m,n,k,r);
+	computelam(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
 	
 
 }
 
 
-void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r){
+void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,float *step,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r){
 
 	cufftComplex *SSt_p = new cufftComplex[r*r];
 	cufftComplex *XSt_p = new cufftComplex[m*r];
@@ -620,6 +737,36 @@ void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,cuf
 	}
 	f_real[0] = f[0].x + sum;
 	//sum = 0.0; f[0].x = 0.0; f[0].y = 0.0;
+        //when get g_real H_real ,a function problem: min{g^Ts + 1/2 s^THs: ||s|| <= delta}
+	//we need to get step s from the function 
+
+	//min{g^Ts + 1/2*s^THs: ||s|| <= delta}
+
+	float *alpha = new float[r];
+	float *coeff = new float[r];
+
+	for(int i = 0;i<r;i++){
+		coeff[i] = 1;				
+	}
+	float *V = new float[r*r];   //return eigvectors
+	float *W = new float[r];    //return eigvalues
+	float *FVT = new float[r*r];
+	ceig(H,V,W,r);  //V is eigVector,W is vector
+	for(int i = 0;i<r;i++){
+		for(int j = 0;j<r;j++){
+			FVT[j*r+i] = -V[i*r+j]; 
+		}
+	}
+
+	mulvec_pro(FVT,g_real,alpha,r,1,r);
+	
+	for(int i = 0;i<r;i++){
+		coeff[i] = alpha[i]/W[i];
+	}
+	mulvec_pro(V,coeff,step,r,1,r);   //we get the step
+
+
+
 
 
 	delete[] SSt_p ;	SSt_p = nullptr;
