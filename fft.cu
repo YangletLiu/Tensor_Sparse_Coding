@@ -133,7 +133,7 @@ void mul_pro(cufftComplex *a,cufftComplex *b,cufftComplex *c,int row,int col,int
 }
 
 void mulvec_pro(float *a,float *b,float *c,int m,int n,int k){
-                       //m*k k*n m*n          row  col  rank
+                       //m*k k*n m*n          row  col  rank 
 	float alpha = 1; 
 	float beta = 0;
 	

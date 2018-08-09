@@ -193,6 +193,8 @@ void TenDL(cufftComplex *t,float *b,float *s,int m,int n,int k,int r){   //å¼ é‡
 	//recover b
 	Tifft(b, k,m*r,b_f);
 
+	
+
 	delete[] b_f;		b_f = nullptr;
 	delete[] s_f;		s_f = nullptr;
 	delete[] dual_lambda;	dual_lambda = nullptr;

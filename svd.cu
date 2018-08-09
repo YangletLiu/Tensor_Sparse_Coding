@@ -635,18 +635,32 @@ void fmincon(float *minx,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,
 
 	//XSt m*r*k  SSt r*r*k
 	float *f_real = new float[1];
+	float ff = 0.0;
 	float *g_real = new float[r];
 	float *H_real = new float[r*r];
 	float *step = new float[r];
+	float tol = 0.0;
 	// get one time f_real,g_real,H_real  how to updtate dual_lambda??????
 	// the follow need to loop
-	computelam(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
+
+	computestep(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
+	do{
+		ff = f_real[1];
+		for(int i = 0;i<r;i++){
+			dual_lambda[i] = dual_lambda[i] -step[i];	
+		}
+		computestep(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
+		tol = ff - f_real[1];
+	}while(tol>1e-06);
 	
+	for(int i = 0;i<r;i++){
+		minx[i] = dual_lambda[i];	
+	}
 
 }
 
 
-void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,float *step,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r){
+void computestep(float *f_real,float *g_real,float *H_real,float *dual_lambda,float *step,cufftComplex *XSt,cufftComplex *SSt,int m,int n,int k,int r){
 
 	cufftComplex *SSt_p = new cufftComplex[r*r];
 	cufftComplex *XSt_p = new cufftComplex[m*r];
@@ -728,6 +742,7 @@ void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,flo
 			H[u].x = H[u].x+2*(temp4[u].x*SSt_inv[u].x - temp4[u].y*SSt_inv[u].y);  
 			H[u].y = H[u].y+2*(temp4[u].x*SSt_inv[u].y + temp4[u].y*SSt_inv[u].x);
 			H_real[u] = H[u].x;
+			H[u].y = 0;
 		}              //H = H +2*(Bkt*Bkt').*(SSt_inv);
 	}
 
@@ -736,12 +751,15 @@ void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,flo
 		sum = sum + dual_lambda[i];
 	}
 	f_real[0] = f[0].x + sum;
+
 	//sum = 0.0; f[0].x = 0.0; f[0].y = 0.0;
         //when get g_real H_real ,a function problem: min{g^Ts + 1/2 s^THs: ||s|| <= delta}
 	//we need to get step s from the function 
 
 	//min{g^Ts + 1/2*s^THs: ||s|| <= delta}
 
+
+/*
 	float *alpha = new float[r];
 	float *coeff = new float[r];
 
@@ -764,6 +782,18 @@ void computelam(float *f_real,float *g_real,float *H_real,float *dual_lambda,flo
 		coeff[i] = alpha[i]/W[i];
 	}
 	mulvec_pro(V,coeff,step,r,1,r);   //we get the step
+
+*/
+
+      //  newton method to solve the problem step = -H'*g
+
+	cufftComplex *H_f = new cufftComplex[r*r];
+	float *H_f_real = new float[r*r];
+	cuinverse(H,H_f,r);
+	for(int i = 0;i<r*r;i++){
+		H_f_real[i] = H_f[i].x;
+	}
+	mulvec_pro(H_f_real,g_real,step,r,1,r);
 
 
 
