@@ -105,7 +105,7 @@ void TenDL(cufftComplex *t,float *b,float *s,int m,int n,int k,int r){   //å¼ é‡
 	cufftComplex *s_f = new cufftComplex[r*n*k];   //s^
 	Tfft(s,k,r*n,s_f);    //s->s^
 	float *dual_lambda = new float[r];    
-	srand(time(NULL));
+	srand(time(0));
 	for(int i = 0;i<r;i++){
 		dual_lambda[i] = 10*fabs(rand()*0.1/(RAND_MAX*0.1));
 		//cout<<dual_lambda[i]<<endl;
@@ -145,6 +145,7 @@ void TenDL(cufftComplex *t,float *b,float *s,int m,int n,int k,int r){   //å¼ é‡
 	//SSt,XSt k,dual_lambda as init value 
         //return x which make obj(lambda) the smallest
 	fmincon(minx,dual_lambda,XSt,SSt,m,n,k,r);    // the value is minx
+	printTensor(r,1,1,minx);
 
 	cufftComplex *SSt_inv = new cufftComplex[r*r];
 	cufftComplex *SSt_lam = new cufftComplex[r*r];  //inner variable

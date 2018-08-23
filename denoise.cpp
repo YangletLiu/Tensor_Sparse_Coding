@@ -92,7 +92,7 @@ int main(int argc,char *argv[]){
 	clock_t start,finish;
 	start = clock();
 	for(int iter = 1;iter<11;iter++){       //迭代十次，且每次迭代都会调用两个算法TSTA和DL
-		cout<<"iter"<<iter<<endl;
+		//cout<<"iter"<<iter<<endl;
 		cout<<"___________________++++__++_+_+_+_+_+______"<<endl;
 		TFISTA(T,T_D,T_C, a, b, c, basenum);  //调用第一个算法学习张量系数，传入三个张量
 		//printTensor(basenum,b,c,T_C);
@@ -102,13 +102,12 @@ int main(int argc,char *argv[]){
 		cout<<endl;
 		TenDL(T_a_f,T_D,T_C,a,b,c,basenum); //调用第二个算法学习张量基，传入原始fft数据，张量系数，还有个30
 		cout<<"我是分割线——————————————————2"<<endl;
-		/*TFISTA(T,T_D,T_C, a, b, c, basenum);  //再调用一次
+		TFISTA(T,T_D,T_C, a, b, c, basenum);  //再调用一次
 		cout<<"我是分割线——————————————————3"<<endl;
 		tprod(T_D,T_C,T_a, a, b, basenum, c);        //将T_D和T_C乘起来，存放到T_a中,row*rank*tube   								     //rank*col*tube    结果为row*col*tube
 		//最后将脏数据和干净的数据作比较 T_a和pure
 		cout<<"我是分割线——————————————————4"<<endl;
 		cout<<"Iter:"<<iter<<"  current PSNR="<<psnr(T_a,clean,a,b,c)<<endl;
-*/
 			
 	}
 

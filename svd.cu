@@ -380,7 +380,7 @@ void cuinverse(cufftComplex *A,cufftComplex *A_f,int m){  //A 为原矩阵，A_f
 		}
 		//cout<<S[i]<<" "<<endl;
 	}
-	cout<<endl;      //S阵取逆就是取倒数
+	//cout<<endl;      //S阵取逆就是取倒数
 
 	for(int i = 0;i<m;i++){
 		for(int j = 0;j<m;j++){
@@ -612,7 +612,7 @@ float psnr(float *image1,float *image2,int m,int n,int k){
 	}*/
 	PSNR3D<<<blocks,threads>>>(d_image1,d_image2,m*n*k);
 	cudaMemcpy(image1,d_image1,sizeof(float)*m*n*k,cudaMemcpyDeviceToHost);
-	printTensor(m,n,k,image1);
+	//printTensor(m,n,k,image1);
 	for(int j = 0;j<k;j++){
 		for(int a = 0;a<m*n;a++){
 			//MSE = MSE+((image1[j*m*n+a] - image2[j*m*n+a])*(image1[j*m*n+a] - image2[j*m*n+a]));	
@@ -620,8 +620,8 @@ float psnr(float *image1,float *image2,int m,int n,int k){
 		}
 		MSE = MSE/(m*n);
 		PSNR = PSNR+10*log10(255*255/MSE);
-		cout<<MSE<<endl;
-		cout<<PSNR<<endl;
+		//cout<<MSE<<endl;
+		//cout<<PSNR<<endl;
 		MSE = 0.0;
 
 	}
@@ -634,28 +634,45 @@ void fmincon(float *minx,float *dual_lambda,cufftComplex *XSt,cufftComplex *SSt,
 	//get the best minx+++++++++++++++++++++++++
 
 	//XSt m*r*k  SSt r*r*k
-	float *f_real = new float[1];
+	float *f_real = new float[1]();
 	float ff = 0.0;
-	float *g_real = new float[r];
-	float *H_real = new float[r*r];
-	float *step = new float[r];
+	float *g_real = new float[r]();
+	float *H_real = new float[r*r]();
+	float *step = new float[r]();
 	float tol = 0.0;
 	// get one time f_real,g_real,H_real  how to updtate dual_lambda??????
 	// the follow need to loop
 
-	computestep(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
 	do{
+		computestep(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
+		for(int i = 0;i<r;i++){
+			dual_lambda[i] = dual_lambda[i] -step[i];
+			step[i] = step[i]*step[i];
+			tol = tol+step[i];
+		}
+		ff++;
+	}while(tol>1e-05);
+	cout<<ff<<endl;
+	/*do{
 		ff = f_real[1];
 		for(int i = 0;i<r;i++){
-			dual_lambda[i] = dual_lambda[i] -step[i];	
+			dual_lambda[i] = dual_lambda[i] -step[i];
+			if (dual_lambda[i]<0){
+				break;
+			}	
 		}
 		computestep(f_real,g_real,H_real,dual_lambda,step,XSt,SSt,m,n,k,r);
-		tol = ff - f_real[1];
+		//tol = ff - f_real[1];
 	}while(tol>1e-06);
-	
+	*/
 	for(int i = 0;i<r;i++){
 		minx[i] = dual_lambda[i];	
 	}
+
+	delete[] f_real; f_real = nullptr;
+	delete[] g_real; g_real = nullptr;
+	delete[] H_real; H_real = nullptr;
+	delete[] step;   step = nullptr;
 
 }
 
@@ -812,6 +829,9 @@ void computestep(float *f_real,float *g_real,float *H_real,float *dual_lambda,fl
 	delete[] f;		f = nullptr;
 	delete[] g;		g = nullptr;
 	delete[] H;		H = nullptr;
+	
+	delete[] H_f;		H_f = nullptr;
+	delete[] H_f_real; 	H_f_real = nullptr;
 	
 }
 
