@@ -10,7 +10,6 @@ def init3D(P):
     Dmat = np.random.rand(patsize**3,r)*2-1
     Dm = np.sqrt(np.sum(Dmat*Dmat,axis = 0))  # a 1*30 array
     szi =np.shape(Dm)
-    print(szi)
     for i in range(szi[0]):
         Dmat[:,i] =Dmat[:,i]/Dm[i]
 

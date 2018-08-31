@@ -6,7 +6,6 @@ def t2b(X,P):
     patsize = P.patsize
     step = P.step
     sz = np.shape(X)
-    print(sz)
     TotalpatNum =int((np.floor((sz[0]-patsize)/step)+1)*(np.floor((sz[1]-patsize)/step)+1)*(np.floor((sz[2]-patsize)/step)+1))
     Z = np.zeros([patsize,patsize,patsize,TotalpatNum])
     for i in range(patsize):
@@ -31,9 +30,7 @@ def b2t(lu,P,size_X):
     xx = np.size(TempOffsetR)
     yy = np.size(TempOffsetC)
     zz = np.size(TempOffsetS)
-    print(xx)
-    print(yy)
-    print(zz)
+    
     E_V = np.zeros(size_X)
     Weight = np.zeros(size_X)
     N = lu.shape[1]
@@ -41,8 +38,8 @@ def b2t(lu,P,size_X):
     for i in range(patsize):
         for j in range(patsize):
             for k in range(patsize):
-                E_V[TempOffsetR-1+i,TempOffsetC-1+j,TempOffsetS-1+k] = E_V[TempOffsetR-1+i,TempOffsetC-1+j,TempOffsetS-1+k]+np.reshape(ZPat[i,j,k,:],[xx,yy,zz],order = 'F') 
-                Weight[TempOffsetR-1+i,TempOffsetC-1+j,TempOffsetS-1+k] = Weight[TempOffsetR-1+i,TempOffsetC-1+j,TempOffsetS-1+k]+np.ones([xx,yy,zz])
+                E_V[i:(TempR-1)*step+1+i,j:(TempC-1)*step+1+j,k:(TempS-1)*step+1+k][::step,::step,::step] += np.reshape(ZPat[i,j,k,:],[xx,yy,zz],order = 'F') 
+                Weight[i:(TempR-1)*step+1+i,j:(TempC-1)*step+1+j,k:(TempS-1)*step+1+k][::step,::step,::step] += np.ones([xx,yy,zz])
 
     E_V = E_V/(Weight+np.spacing(1))
     return E_V

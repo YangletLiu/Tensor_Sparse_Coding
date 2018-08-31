@@ -5,10 +5,12 @@ import numpy as np
 from tenor2block import * 
 from initbase import *
 from tsa import *
+from tprod import *
+from tdl import *
+from psnr3d import *
 def denoise(X):
     size_X = X.shape
     Xc = t2b(X,P)
-    print(Xc.shape)
     size_Xc = Xc.shape  #(25,33614,5)
     Xhat = np.fft.fft(Xc,axis=-1)  #fft along 3rd
     D0 = init3D(P)
@@ -24,8 +26,6 @@ def denoise(X):
         emsi = b2t(lu,P,size_X)
         ps = psnr(emsi*255,OX*255)
         print('iter={},current PSNR = {}'.format(i,ps)) 
-
-
 
 
 

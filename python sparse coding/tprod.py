@@ -21,15 +21,15 @@ def tensor_prod(A,ch1,B,ch2):
     else :
         sz[1] = sz_B[1]
 
-    print(sz.shape)
+   
     sz= sz.astype(np.int32)
-    print(sz.dtype)
+
     chat = np.zeros(sz,dtype = complex)
     ahat = np.fft.fft(A,axis = -1)
     bhat = np.fft.fft(B,axis = -1)
     if ch1 == 't' and ch2 == 't':
         for k in range(sz[2]):
-            chat[:,:,k] =np.dot(np.conj(ahat[:,:,k]),T,np.conj(bhat[:,:,k]).T)
+            chat[:,:,k] =np.dot(np.conj(ahat[:,:,k]).T,np.conj(bhat[:,:,k]).T)
     elif ch1 == 't':
         for k in range(sz[2]):
             chat[:,:,k] =np.dot(np.conj(ahat[:,:,k]).T,bhat[:,:,k])
