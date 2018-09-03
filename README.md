@@ -1,8 +1,9 @@
 Tensor sparse coding 
 
-1 run starrt.py to load the origin dataset --3D tensor,we will add some noise .then through cofficience learning and dictionary learning.we will get the new tensor which is close to origin
+1 Run starrt.py to load the origin dataset (a 3D tensor), we add noise.
+  Then through cofficience learning and dictionary learning. We get a reconstruct tensor with high PSNR.
 
 
-2 the process can be seeing from the next picture
+2 The process can be seeing from the next picture
 
 /home/hanlu/Pictures/sparsecoding.png
