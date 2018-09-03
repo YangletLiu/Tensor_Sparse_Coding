@@ -45,8 +45,11 @@ def b2t(lu,P,size_X):
     return E_V
 
 if __name__ == '__main__':
-    print('smys')
-    han = np.random.rand(25,33614,5)
-    size = [101,101,31]
-    print(b2t(han,P,size).shape)
+
+    han = np.random.rand(101,101,31)
+    print(t2b(han,P).shape)
     print('nihao')
+    ll = np.random.rand(25,33614,5)
+    ss= np.array([101,101,31])
+    print(b2t(ll,P,ss).shape)
+

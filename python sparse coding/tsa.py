@@ -54,3 +54,13 @@ def tsta(*args):
     B = B1
 
     return B
+
+
+if __name__ == '__main__':
+    tt = np.random.rand(4,9,3)
+    print(t2m(tt).shape)
+    aa = np.random.rand(25,33614,5)
+    bb = np.random.rand(25,30,5)
+    print(tsta(aa,P,bb).shape)
+
+

@@ -51,6 +51,6 @@ if __name__ == '__main__':
     print(A[:,:,1])
     print(B[:,:,0])
     print(B[:,:,1])
-    C = tensor_prod(A,'a',B,'b')
+    C = tensor_prod(A,'t',B,'t')
     print(C[:,:,0])
-    print(C[:,:,0])
+    print(C[:,:,1])

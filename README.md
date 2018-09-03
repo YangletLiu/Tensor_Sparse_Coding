@@ -1,5 +1,8 @@
-# Tensor_Sparse_Coding
+Tensor sparse coding 
 
-A GPU/CUDA implementation and optimization of tensor sparse coding in the following papers:
+1 run starrt.py to load the origin dataset --3D tensor,we will add some noise .then through cofficience learning and dictionary learning.we will get the new tensor which is close to origin
 
-[1] Fei Jiang, Xiao-Yang Liu, Hongtao Lu, and Ruimin Shen. Efficient Multi-dimensional Tensor Sparse Coding Using t-linear Combinations, AAAI 2018.
+
+2 the process can be seeing from the next picture
+
+/home/hanlu/Pictures/sparsecoding.png

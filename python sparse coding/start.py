@@ -8,7 +8,20 @@ from tsa import *
 from tprod import *
 from tdl import *
 from psnr3d import *
-def denoise(X):
+import matplotlib.pyplot as plt
+
+def denoise(OX):
+
+    plt.figure(figsize = (10,10))    
+    plt.subplot(3,4,1),plt.title('origin')
+    plt.imshow(OX[:,:,1],cmap = 'gray'),plt.axis('off')
+
+    size_OX = OX.shape
+    X = OX+0.2*np.random.rand(size_OX[0],size_OX[1],size_OX[2])
+     
+    plt.subplot(3,4,2),plt.title('dirty')
+    plt.imshow(X[:,:,1],cmap = 'gray'),plt.axis('off')
+
     size_X = X.shape
     Xc = t2b(X,P)
     size_Xc = Xc.shape  #(25,33614,5)
@@ -24,14 +37,19 @@ def denoise(X):
         B0 = tsta(Xc,P,D0)
         lu = tensor_prod(D0,'a',B0,'a')
         emsi = b2t(lu,P,size_X)
-        ps = psnr(emsi*255,OX*255)
-        print('iter={},current PSNR = {}'.format(i,ps)) 
 
+        plt.subplot(3,4,i+3),plt.title(str(i))
+        plt.imshow(X[:,:,1],cmap = 'gray'),plt.axis('off')
+
+        #ps = psnr(emsi*255,OX*255)
+
+        #print('iter={},current PSNR = {}'.format(i,ps)) 
+    
+    plt.savefig('/home/hanlu/Pictures/sparsecoding.png')
+    plt.show()
 
 
 if __name__ =='__main__':
     OX = sio.loadmat('caseandresult/Omsi.mat')
     OX = OX['Omsi']
-    size_OX = OX.shape
-    X = OX+0.2*np.random.rand(size_OX[0],size_OX[1],size_OX[2])
-    denoise(X)
+    denoise(OX)

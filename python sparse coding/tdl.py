@@ -1,6 +1,7 @@
 # tensor base learning
 import scipy.optimize as sco
 import numpy as np
+from parm import Para as P
 
 def tendl(Xhat,S,P):
     r = P.r
@@ -8,7 +9,9 @@ def tendl(Xhat,S,P):
     dual_lambda = 10*abs(np.random.randn(r))
     m,_,k = Xhat.shape
     SSt = np.zeros((r,r,k))
+    SSt = np.fft.fft(SSt,axis = -1)
     XSt = np.zeros((m,r,k))
+    XSt = np.fft.fft(XSt,axis = -1)
     for kk in range(k):
         xhatk = Xhat[:,:,kk]
         shatk = Shat[:,:,kk]
@@ -23,6 +26,7 @@ def tendl(Xhat,S,P):
 
     Lambda = np.diag(res.x)
     Bhat = np.zeros((m,r,k))
+    Bhat = np.fft.fft(Bhat,axis = -1)
     for kk in range(k):
         SStk = SSt[:,:,kk]
         XStk = XSt[:,:,kk]
@@ -52,4 +56,9 @@ def fobj(lam,XSt,SSt,k):
 
     return f
 
+if __name__ == '__main__':
+    ss = np.random.rand(30,33614,25)
+    xx = np.random.rand(25,33614,25)
+    xx_h = np.fft.fft(xx,axis=-1)
+    print(tendl(xx_h,ss,P).shape)
 
