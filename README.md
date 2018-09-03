@@ -4,6 +4,7 @@ Tensor sparse coding
   Then through cofficience learning and dictionary learning. We get a reconstruct tensor with high PSNR.
 
 
-2 The process can be seeing from the next picture
+2 The resulted picture is:
 
-/home/hanlu/Pictures/sparsecoding.png
+Tensor_Sparse_Coding/python sparse coding/result/sparsecoding.png
+
