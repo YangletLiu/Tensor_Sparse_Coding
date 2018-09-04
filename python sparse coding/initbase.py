@@ -16,4 +16,7 @@ def init3D(P):
     D = np.transpose(np.reshape(Dmat,[patsize**2,patsize,r],order = 'F'),[0,2,1])
     return D
 
+if __name__ == '__main__':
+    print(init3D(P).shape)
+
 

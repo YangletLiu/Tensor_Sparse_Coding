@@ -9,9 +9,9 @@ from tprod import *
 from tdl import *
 from psnr3d import *
 import matplotlib.pyplot as plt
+import os
 
 def denoise(OX):
-
     plt.figure(figsize = (10,10))    
     plt.subplot(3,4,1),plt.title('origin')
     plt.imshow(OX[:,:,1],cmap = 'gray'),plt.axis('off')
@@ -28,6 +28,8 @@ def denoise(OX):
     Xhat = np.fft.fft(Xc,axis=-1)  #fft along 3rd
     D0 = init3D(P)
     # defalt = np.zeros((P.r,size_Xc[1],size_Xc[2]))
+    if not os.path.exists('./result'):
+        os.mkdir('./result')
     for i in range(P.maxiter):
         if i == 0:
             B = tsta(Xc,P,D0)
@@ -39,13 +41,12 @@ def denoise(OX):
         emsi = b2t(lu,P,size_X)
 
         plt.subplot(3,4,i+3),plt.title(str(i))
-        plt.imshow(X[:,:,1],cmap = 'gray'),plt.axis('off')
+        plt.imshow(emsi[:,:,1],cmap = 'gray'),plt.axis('off')
 
-        #ps = psnr(emsi*255,OX*255)
-
-        #print('iter={},current PSNR = {}'.format(i,ps)) 
+        ps = psnr(OX*255,emsi*255)
+        print('iter={},current PSNR = {}'.format(i,ps)) 
     
-    plt.savefig('/home/hanlu/Pictures/sparsecoding.png')
+    plt.savefig('./result/sparsecoding.png')
     plt.show()
 
 
